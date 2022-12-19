@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Education</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-sm bg-dark">
+  <div class="container-fluid">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="#">System</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container-fluid mt-3">
+  <h6>Welcome, {% if msg|length %}{{msg}}{% endif %}</h6><br>
+  <h5>You are teaching: {{gettutorcourse(msg)}}</h5>
+  {% if msg1|length %}
+    <div class="alert alert-success alert-dismissible">
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      <strong class="text-center">{{msg1}}</strong> 
+    </div>
+  {% endif %}
+  {%extends "layout.html" %}
+{% block title %}attendance{% endblock %}
+{% block content %} 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+   $(document).ready(function(){
+    imageUrl = '/static/images/bg.jpeg';
+    $('body').css('background-image', 'url(' + imageUrl + ')');
+  });
+   function stu_present(stu_id,course_id)
+   {
+    $.post(
+      '/presentstu',
+        'stu_id='+stu_id+'&course_id='+course_id,
+      function(response)
+      {
+        if(response == '1')
+        {
+          alert("Attendance marked successfully");
+          $("#presentbtn"+stu_id).hide();
+          $("#absentbtn"+stu_id).hide();
+        }
+      }
+    );
+   }
+   function stu_absent(stu_id,course_id)
+   {
+    $.post(
+      '/absentstu',
+      'stu_id='+stu_id+'&course_id='+course_id,
+      function(response)
+      {
+        if(response == '1')
+        {
+          alert("Attendance marked successfully");
+          $("#presentbtn"+stu_id).hide();
+          $("#absentbtn"+stu_id).hide();
+        }
+      }
+    );
+   }
+</script>
+<div class="container mt-3">
+  <a class="btn btn-primary" style="margin-top:3%;width: 12%" href="{{url_for('updategrades')}}">Update Grades</a>
+  
+  <a class="btn btn-warning" style="margin-top: 3%;width: 12%;float:right;background: #fbceb5;border-color: #fbceb5;" href="{{url_for('logout')}}">Log out</a>
+  <h2 class="text-center">Attendance</h2>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+      <tr>
+          <th>Student Name</th>
+          <th>Student Email</th>
+          <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+        {% for stu in classdata %}
+          <tr>
+            <td>{{stu.username}}</td>
+            <td>{{stu.email}}</td>
+            <td>
+              {% if getusertodayatten(stu.id,course_id) == 2 %}
+                <button class="btn btn-success" onclick="stu_present({{stu.id}},{{course_id}})" id="presentbtn{{stu.id}}">Present</button>
+                <button class="btn btn-warning" onclick="stu_absent({{stu.id}},{{course_id}})" id="absentbtn{{stu.id}}">Absent</button>
+              {% else %}
+                <p>Attendance has been marked.</p>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+</body>
+</html>
